@@ -1,0 +1,35 @@
+version: "3.9"
+
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    ports:
+      - "8000:8000"
+    environment:
+      - RUNTIME_DIR=/runtime
+      - UPLOAD_DIR=/runtime/uploads
+      - RESULTS_DIR=/runtime/results
+      - DATABASE_URL=sqlite:////runtime/app.db
+      - MODEL_CHECKPOINT=/runtime/checkpoints/best_model.pt
+      - PATCH_SIZE=256
+      - MC_PASSES=10
+    volumes:
+      - runtime_data:/runtime
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - "5173:80"
+    environment:
+      - VITE_API_BASE_URL=http://localhost:8000
+    depends_on:
+      - backend
+    restart: unless-stopped
+
+volumes:
+  runtime_data:
