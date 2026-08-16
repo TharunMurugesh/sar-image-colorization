@@ -153,6 +153,20 @@ def id_split(
 # CSV I/O
 # ─────────────────────────────────────────────────────────────────────────────
 
+PROJECT_ROOT = Path(__file__).resolve().parent.parent
+
+
+def _to_relative_posix(path_obj: Optional[Union[str, Path]], root: Path = PROJECT_ROOT) -> str:
+    if not path_obj:
+        return ""
+    p = Path(path_obj).resolve()
+    try:
+        rel = p.relative_to(root.resolve())
+        return rel.as_posix()
+    except ValueError:
+        return p.as_posix()
+
+
 def save_split_csv(pairs: List[Dict], path: Path, split_name: str) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     with open(path, "w", newline="", encoding="utf-8") as f:
@@ -162,20 +176,31 @@ def save_split_csv(pairs: List[Dict], path: Path, split_name: str) -> None:
             writer.writerow({
                 "split":       split_name,
                 "pair_id":     p.get("id", ""),
-                "sar_path":    str(p.get("sar", "")),
-                "target_path": str(p.get("target", "")),
+                "sar_path":    _to_relative_posix(p.get("sar")),
+                "target_path": _to_relative_posix(p.get("target")),
             })
-    print(f"  [splits] Saved {len(pairs):4d} pairs → {path}")
+    print(f"  [splits] Saved {len(pairs):4d} pairs -> {path}")
 
 
 def load_split_csv(path: Path) -> List[Dict]:
     pairs = []
+    root = PROJECT_ROOT
     with open(path, "r", encoding="utf-8") as f:
         for row in csv.DictReader(f):
+            sar_p = Path(row["sar_path"])
+            if not sar_p.is_absolute():
+                sar_p = (root / sar_p).resolve()
+
+            tgt_p = None
+            if row.get("target_path"):
+                tgt_p = Path(row["target_path"])
+                if not tgt_p.is_absolute():
+                    tgt_p = (root / tgt_p).resolve()
+
             pairs.append({
                 "id":     row["pair_id"],
-                "sar":    row["sar_path"],
-                "target": row["target_path"] or None,
+                "sar":    sar_p,
+                "target": tgt_p,
             })
     return pairs
 

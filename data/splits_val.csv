@@ -1,0 +1,2 @@
+split,pair_id,sar_path,target_path
+val,3,data/raw/sih1733/Pair-3/SAR-Image-3.jpg,data/raw/sih1733/Pair-3/Optical-Image-3.jpg

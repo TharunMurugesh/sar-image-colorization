@@ -82,6 +82,7 @@ htmlcov/
 
 # Pytest
 .pytest_cache/
+.pytest_tmp/
 
 # mypy
 .mypy_cache/

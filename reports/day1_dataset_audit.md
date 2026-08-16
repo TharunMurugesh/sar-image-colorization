@@ -1,7 +1,7 @@
 # Day 1 Dataset Audit Report
 
-Generated: 2026-08-14T16:37:58.213040 UTC
-Data root: `C:\Users\TM\Documents\Projects\sar-image-colorization\data\raw`
+Generated: 2026-08-15T19:04:58.236252 UTC
+Data root: `D:\sar-image-colorization\sar-image-colorization\data\raw`
 
 ---
 
@@ -27,7 +27,7 @@ Data root: `C:\Users\TM\Documents\Projects\sar-image-colorization\data\raw`
 
 | Field | Value |
 |-------|-------|
-| Path | `C:\Users\TM\Documents\Projects\sar-image-colorization\data\raw\Pair-1\Optical-Image-1.jpg` |
+| Path | `D:\sar-image-colorization\sar-image-colorization\data\raw\sih1733\Pair-1\Optical-Image-1.jpg` |
 | Kind | image |
 | Size | 1,689,585 bytes |
 | Shape (C×H×W or H×W×C) | 1733 × 2500 × 3 |
@@ -47,7 +47,7 @@ Data root: `C:\Users\TM\Documents\Projects\sar-image-colorization\data\raw`
 
 | Field | Value |
 |-------|-------|
-| Path | `C:\Users\TM\Documents\Projects\sar-image-colorization\data\raw\Pair-1\SAR-Image-1.jpg` |
+| Path | `D:\sar-image-colorization\sar-image-colorization\data\raw\sih1733\Pair-1\SAR-Image-1.jpg` |
 | Kind | image |
 | Size | 2,505,478 bytes |
 | Shape (C×H×W or H×W×C) | 1733 × 2500 × 3 |
@@ -67,7 +67,7 @@ Data root: `C:\Users\TM\Documents\Projects\sar-image-colorization\data\raw`
 
 | Field | Value |
 |-------|-------|
-| Path | `C:\Users\TM\Documents\Projects\sar-image-colorization\data\raw\Pair-3\SAR-Image-3.jpg` |
+| Path | `D:\sar-image-colorization\sar-image-colorization\data\raw\sih1733\Pair-3\SAR-Image-3.jpg` |
 | Kind | image |
 | Size | 2,393,662 bytes |
 | Shape (C×H×W or H×W×C) | 1733 × 2500 × 3 |
@@ -87,7 +87,7 @@ Data root: `C:\Users\TM\Documents\Projects\sar-image-colorization\data\raw`
 
 | Field | Value |
 |-------|-------|
-| Path | `C:\Users\TM\Documents\Projects\sar-image-colorization\data\raw\Pair-2\Optical-Image-2.jpg` |
+| Path | `D:\sar-image-colorization\sar-image-colorization\data\raw\sih1733\Pair-2\Optical-Image-2.jpg` |
 | Kind | image |
 | Size | 1,233,869 bytes |
 | Shape (C×H×W or H×W×C) | 1733 × 2500 × 3 |
@@ -107,7 +107,7 @@ Data root: `C:\Users\TM\Documents\Projects\sar-image-colorization\data\raw`
 
 | Field | Value |
 |-------|-------|
-| Path | `C:\Users\TM\Documents\Projects\sar-image-colorization\data\raw\Pair-3\Optical-Image-3.jpg` |
+| Path | `D:\sar-image-colorization\sar-image-colorization\data\raw\sih1733\Pair-3\Optical-Image-3.jpg` |
 | Kind | image |
 | Size | 1,287,094 bytes |
 | Shape (C×H×W or H×W×C) | 1733 × 2500 × 3 |
@@ -127,7 +127,7 @@ Data root: `C:\Users\TM\Documents\Projects\sar-image-colorization\data\raw`
 
 | Field | Value |
 |-------|-------|
-| Path | `C:\Users\TM\Documents\Projects\sar-image-colorization\data\raw\Pair-2\SAR-Image-2.jpg` |
+| Path | `D:\sar-image-colorization\sar-image-colorization\data\raw\sih1733\Pair-2\SAR-Image-2.jpg` |
 | Kind | image |
 | Size | 2,300,056 bytes |
 | Shape (C×H×W or H×W×C) | 1733 × 2500 × 3 |
