@@ -1,12 +1,11 @@
 """
 scripts/make_splits.py
-Day 1 — Task 4: Scene-safe train / validation / test split generator.
+Scene-disjoint train / val / test split generator.
 
-Split strategy (from build plan §Day1 Task 4):
-  - Preferred split unit: scene / location ID.
-  - Patches from the same scene must NOT appear in both train and test.
-  - Split: 70% train / 15% val / 15% test.
-  - Output: CSV files so every future run uses exactly the same samples.
+Split strategy:
+  - Split unit: scene / location ID (whole scenes go to one split only).
+  - Default: 70% train / 15% val / 15% test.
+  - Output: CSV files so every run uses exactly the same samples.
 
 Usage:
     python scripts/make_splits.py --data-root data/raw --output-dir data/
@@ -25,40 +24,23 @@ from typing import Dict, List, Optional, Tuple
 
 import numpy as np
 
-# Add project root to path so ml.data can be imported
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 from ml.data.dataset import discover_pairs, discover_sar_only
 
 
-# ─────────────────────────────────────────────────────────────────────────────
-# Scene ID extraction
-# ─────────────────────────────────────────────────────────────────────────────
-
 def extract_scene_id(path: Path) -> str:
-    """Extract a scene / location identifier from a file path.
-
-    Heuristic priority:
-      1. Parent directory name (most reliable scene grouping).
-      2. Leading alphanumeric prefix of the filename stem.
-      3. Fall back to pair ID (the file stem itself).
-
-    This function is intentionally forgiving — pair IDs remain unique even
-    if two files share the same parent directory.
-    """
+    """Extract a scene / location identifier from a file path."""
     parent = path.parent.name.lower()
-    # If parent is a meaningful name (not "sar", "raw", "data"), use it
     generic = {"sar", "raw", "data", "optical", "rgb", "color", "ref", "target", "images", "imgs"}
     if parent not in generic and parent != ".":
         return parent
 
-    # Try leading scene prefix from filename, e.g. "scene_003_sar.tif" → "scene_003"
     stem = path.stem
     m = re.match(r"([a-zA-Z]+[_\-]?\d+)[_\-]", stem)
     if m:
         return m.group(1).lower()
 
-    # Fall back to first numeric run as scene
     m = re.search(r"(\d{2,})", stem)
     if m:
         return m.group(1)
@@ -66,25 +48,16 @@ def extract_scene_id(path: Path) -> str:
     return stem.lower()
 
 
-# ─────────────────────────────────────────────────────────────────────────────
-# Split logic
-# ─────────────────────────────────────────────────────────────────────────────
-
 def scene_safe_split(
     pairs: List[Dict],
     train_frac: float = 0.70,
     val_frac: float   = 0.15,
     seed: int         = 42,
 ) -> Tuple[List[Dict], List[Dict], List[Dict]]:
-    """Split pairs into train / val / test without scene leakage.
-
-    Groups pairs by scene ID, shuffles scenes (not pairs), then assigns
-    whole scenes to splits.
-    """
+    """Split pairs into train / val / test without scene leakage."""
     rng = random.Random(seed)
     np.random.seed(seed)
 
-    # Group by scene
     scene_to_pairs: Dict[str, List[Dict]] = {}
     for p in pairs:
         scene_id = extract_scene_id(Path(p["sar"]))
@@ -93,12 +66,11 @@ def scene_safe_split(
     scenes = sorted(scene_to_pairs.keys())
     rng.shuffle(scenes)
 
-    n_scenes   = len(scenes)
-    n_train    = max(1, round(n_scenes * train_frac))
-    n_val      = max(1, round(n_scenes * val_frac))
-    n_test     = n_scenes - n_train - n_val
+    n_scenes = len(scenes)
+    n_train  = max(1, round(n_scenes * train_frac))
+    n_val    = max(1, round(n_scenes * val_frac))
+    n_test   = n_scenes - n_train - n_val
     if n_test < 1:
-        # Redistribute to ensure at least 1 in each split
         if n_val > 1:
             n_val -= 1
         elif n_train > 2:
@@ -113,13 +85,12 @@ def scene_safe_split(
     val_pairs   = [p for s in val_scenes   for p in scene_to_pairs[s]]
     test_pairs  = [p for s in test_scenes  for p in scene_to_pairs[s]]
 
-    # Verify no leakage
     train_ids = {p["id"] for p in train_pairs}
     val_ids   = {p["id"] for p in val_pairs}
     test_ids  = {p["id"] for p in test_pairs}
-    assert not (train_ids & test_ids),  "LEAKAGE: same ID in train and test!"
-    assert not (train_ids & val_ids),   "LEAKAGE: same ID in train and val!"
-    assert not (val_ids   & test_ids),  "LEAKAGE: same ID in val and test!"
+    assert not (train_ids & test_ids), "LEAKAGE: same ID in train and test!"
+    assert not (train_ids & val_ids),  "LEAKAGE: same ID in train and val!"
+    assert not (val_ids   & test_ids), "LEAKAGE: same ID in val and test!"
 
     return train_pairs, val_pairs, test_pairs
 
@@ -130,7 +101,7 @@ def id_split(
     val_frac: float   = 0.15,
     seed: int         = 42,
 ) -> Tuple[List[Dict], List[Dict], List[Dict]]:
-    """Fallback: split by pair/sample ID when scene IDs are unavailable."""
+    """Fallback: split by pair ID when scene IDs are unavailable."""
     rng = random.Random(seed)
     pairs_shuffled = pairs[:]
     rng.shuffle(pairs_shuffled)
@@ -143,26 +114,22 @@ def id_split(
         n_val  = max(1, n_val - 1)
         n_test = n - n_train - n_val
 
-    train_pairs = pairs_shuffled[:n_train]
-    val_pairs   = pairs_shuffled[n_train: n_train + n_val]
-    test_pairs  = pairs_shuffled[n_train + n_val:]
-    return train_pairs, val_pairs, test_pairs
+    return (
+        pairs_shuffled[:n_train],
+        pairs_shuffled[n_train: n_train + n_val],
+        pairs_shuffled[n_train + n_val:],
+    )
 
-
-# ─────────────────────────────────────────────────────────────────────────────
-# CSV I/O
-# ─────────────────────────────────────────────────────────────────────────────
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 
 
-def _to_relative_posix(path_obj: Optional[Union[str, Path]], root: Path = PROJECT_ROOT) -> str:
+def _to_relative_posix(path_obj: Optional[str | Path], root: Path = PROJECT_ROOT) -> str:
     if not path_obj:
         return ""
     p = Path(path_obj).resolve()
     try:
-        rel = p.relative_to(root.resolve())
-        return rel.as_posix()
+        return p.relative_to(root.resolve()).as_posix()
     except ValueError:
         return p.as_posix()
 
@@ -197,29 +164,19 @@ def load_split_csv(path: Path) -> List[Dict]:
                 if not tgt_p.is_absolute():
                     tgt_p = (root / tgt_p).resolve()
 
-            pairs.append({
-                "id":     row["pair_id"],
-                "sar":    sar_p,
-                "target": tgt_p,
-            })
+            pairs.append({"id": row["pair_id"], "sar": sar_p, "target": tgt_p})
     return pairs
 
 
-# ─────────────────────────────────────────────────────────────────────────────
-# Entry point
-# ─────────────────────────────────────────────────────────────────────────────
-
 def parse_args():
-    parser = argparse.ArgumentParser(
-        description="Day 1 — Generate scene-safe train/val/test splits."
-    )
-    parser.add_argument("--data-root",   required=True, type=Path, help="Root of the dataset.")
-    parser.add_argument("--output-dir",  default=Path("data"),    type=Path, help="Output directory for CSVs.")
-    parser.add_argument("--train-frac",  default=0.70,  type=float)
-    parser.add_argument("--val-frac",    default=0.15,  type=float)
-    parser.add_argument("--seed",        default=42,    type=int)
+    parser = argparse.ArgumentParser(description="Generate scene-safe train/val/test splits.")
+    parser.add_argument("--data-root",      required=True, type=Path)
+    parser.add_argument("--output-dir",     default=Path("data"), type=Path)
+    parser.add_argument("--train-frac",     default=0.70, type=float)
+    parser.add_argument("--val-frac",       default=0.15, type=float)
+    parser.add_argument("--seed",           default=42, type=int)
     parser.add_argument("--no-scene-split", action="store_true",
-                        help="Skip scene grouping; split by pair ID instead (documents limitation).")
+                        help="Split by pair ID instead of scene grouping.")
     return parser.parse_args()
 
 
@@ -231,59 +188,50 @@ def main():
         print(f"[splits] ERROR: data root does not exist: {root}", file=sys.stderr)
         sys.exit(1)
 
-    print(f"[splits] Discovering pairs in {root} …")
+    print(f"[splits] Discovering pairs in {root} ...")
     try:
         pairs = discover_pairs(root)
         print(f"[splits] Found {len(pairs)} SAR/reference pairs.")
     except ValueError as e:
         print(f"[splits] WARNING: {e}")
-        print("[splits] Falling back to SAR-only discovery (inference mode).")
+        print("[splits] Falling back to SAR-only discovery.")
         pairs = discover_sar_only(root)
         print(f"[splits] Found {len(pairs)} SAR-only files.")
         if not pairs:
-            print("[splits] No files found at all. Check --data-root.")
+            print("[splits] No files found. Check --data-root.")
             sys.exit(1)
 
     if len(pairs) < 3:
-        print(f"[splits] WARNING: only {len(pairs)} pairs — splits will have ≤1 sample each.")
+        print(f"[splits] WARNING: only {len(pairs)} pairs — splits may have <=1 sample each.")
 
-    # Determine split strategy
     use_scene = not args.no_scene_split
     if use_scene:
         scenes = {extract_scene_id(Path(p["sar"])) for p in pairs}
         if len(scenes) < 3:
-            print(f"[splits] Only {len(scenes)} unique scene(s) detected — falling back to ID split.")
+            print(f"[splits] Only {len(scenes)} unique scene(s) — falling back to ID split.")
             use_scene = False
 
     if use_scene:
-        print("[splits] Using scene-based split (no scene leakage).")
-        train_pairs, val_pairs, test_pairs = scene_safe_split(
-            pairs, args.train_frac, args.val_frac, args.seed
-        )
-        split_note = "scene-based (no scene leakage)"
+        print("[splits] Using scene-based split.")
+        train_pairs, val_pairs, test_pairs = scene_safe_split(pairs, args.train_frac, args.val_frac, args.seed)
+        split_note = "scene-based"
     else:
-        print("[splits] Using pair-ID-based split (LIMITATION: possible scene leakage — document this).")
-        train_pairs, val_pairs, test_pairs = id_split(
-            pairs, args.train_frac, args.val_frac, args.seed
-        )
-        split_note = "pair-ID-based (scene leakage possible)"
+        print("[splits] Using pair-ID-based split.")
+        train_pairs, val_pairs, test_pairs = id_split(pairs, args.train_frac, args.val_frac, args.seed)
+        split_note = "pair-ID-based"
 
     out = args.output_dir.resolve()
     save_split_csv(train_pairs, out / "splits_train.csv", "train")
     save_split_csv(val_pairs,   out / "splits_val.csv",   "val")
     save_split_csv(test_pairs,  out / "splits_test.csv",  "test")
 
-    # Human-readable summary
     total = len(train_pairs) + len(val_pairs) + len(test_pairs)
     print(f"\n[splits] Split summary ({split_note}):")
     print(f"  Train : {len(train_pairs):4d} pairs  ({100*len(train_pairs)/total:.1f}%)")
     print(f"  Val   : {len(val_pairs):4d} pairs  ({100*len(val_pairs)/total:.1f}%)")
     print(f"  Test  : {len(test_pairs):4d} pairs  ({100*len(test_pairs)/total:.1f}%)")
     print(f"  Total : {total:4d} pairs")
-    print(f"\n  Seed  : {args.seed}")
-    print(f"  Method: {split_note}")
 
-    # Write a small metadata file
     meta_path = out / "splits_meta.txt"
     meta_path.write_text(
         f"split_method={split_note}\n"

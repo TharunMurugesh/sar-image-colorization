@@ -1,0 +1,18 @@
+{
+  "n_samples": 54,
+  "psnr_mean": 14.732401089533015,
+  "psnr_std": 0.9253267634756936,
+  "ssim_mean": 0.3303620763130872,
+  "ssim_std": 0.08999807380447251,
+  "delta_e_mean": 16.769199901156956,
+  "delta_e_std": 1.871568141577217,
+  "baseline_gray_psnr": 8.012275888904744,
+  "baseline_gray_ssim": -0.07804827111137096,
+  "baseline_gray_de": 48.50578346958867,
+  "baseline_cmap_psnr": 8.53478001062724,
+  "baseline_cmap_ssim": -0.03330308504489542,
+  "baseline_cmap_de": 69.67253155178494,
+  "baseline_model_psnr": 13.64066467202163,
+  "baseline_model_ssim": 0.27982605464581617,
+  "baseline_model_de": 19.46794859568278
+}

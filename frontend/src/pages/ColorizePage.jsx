@@ -106,7 +106,7 @@ export function ColorizePage({ health, onJobCompleted }) {
       <div className="glass-card" style={{ padding: '28px' }}>
         <div style={{ marginBottom: '20px' }}>
           <h2 style={{ fontSize: '1.4rem', fontWeight: 700, color: 'var(--text-primary)' }}>
-            SAR-to-Color Synthesis Studio
+            SAR-to-Optical Reconstruction Studio
           </h2>
           <p style={{ fontSize: '0.88rem', color: 'var(--text-secondary)', marginTop: '4px' }}>
             Upload raw Synthetic Aperture Radar imagery to synthesize physically-informed optical representations with Bayesian uncertainty estimation.
@@ -207,7 +207,7 @@ export function ColorizePage({ health, onJobCompleted }) {
               <CheckCircle2 size={22} color="var(--emerald-400)" />
               <div>
                 <h3 style={{ fontSize: '1.2rem', fontWeight: 700, color: 'var(--text-primary)' }}>
-                  Colorized Synthesis Results
+                  Optical Reconstruction Results
                 </h3>
                 <span className="font-mono" style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>
                   File: {currentJob.filename} &bull; Output Size: {currentJob.sar_width || 256}&times;{currentJob.sar_height || 256}

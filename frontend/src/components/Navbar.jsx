@@ -15,7 +15,7 @@ export function Navbar({ activeTab, setActiveTab, health }) {
           </div>
           <div className="brand-info">
             <div className="brand-tag">ISRO SIH1733 &bull; SAR AI</div>
-            <h1>SAR Image Colorization</h1>
+            <h1>SAR-to-Optical Reconstruction</h1>
           </div>
         </div>
 
@@ -25,7 +25,7 @@ export function Navbar({ activeTab, setActiveTab, health }) {
             onClick={() => setActiveTab('colorize')}
           >
             <Sparkles size={16} />
-            <span>Colorize</span>
+            <span>Reconstruct</span>
           </button>
           
           <button

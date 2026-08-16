@@ -16,7 +16,7 @@ services:
       - PATCH_SIZE=256
       - MC_PASSES=10
     volumes:
-      - runtime_data:/runtime
+      - ./runtime:/runtime
     restart: unless-stopped
 
   frontend:
@@ -31,5 +31,3 @@ services:
       - backend
     restart: unless-stopped
 
-volumes:
-  runtime_data:

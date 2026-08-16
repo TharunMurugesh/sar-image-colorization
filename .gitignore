@@ -1,71 +1,63 @@
 # Python
 __pycache__/
 *.py[cod]
-*$py.class
 *.pyo
 *.pyd
-.Python
 *.egg
 *.egg-info/
 dist/
 build/
-eggs/
-wheels/
-*.whl
-pip-wheel-metadata/
+.Python
 .env
 .venv
 env/
 venv/
 ENV/
-env.bak/
-venv.bak/
 
 # Jupyter
-.ipynb_checkpoints
-*.ipynb
+.ipynb_checkpoints/
 
-# PyTorch / ML
+# ML / PyTorch
 *.pt
 *.pth
 *.ckpt
 *.npz
 *.npy
-checkpoints/
 lightning_logs/
 mlruns/
 wandb/
 
-# Data / processed
+# Data (large files — keep CSVs and manifests in git)
 data/raw/
-data/processed/
+data/processed/patches/
 data/cache/
+data/sen12/
 *.tif
 *.tiff
 *.hdf5
 *.h5
 
-# Runtime artifacts
-runtime/
-uploads/
-results/
+# Runtime (generated at launch)
+runtime/app.db
+runtime/results/
+runtime/uploads/
+runtime/logs/
+runtime/checkpoints/
 
-# Reports (generated images)
+# Reports (generated figures — keep markdown reports)
 reports/*.png
 reports/*.jpg
 reports/*.pdf
+reports/*_history.json
+reports/*_training_curve.png
 
 # Node / Frontend
 node_modules/
-.npm
-dist/
-.next/
-out/
 frontend/dist/
 frontend/.env.local
-
-# Docker volumes
-.docker/
+.npm
+.next/
+out/
 
 # IDE
 .vscode/
@@ -75,20 +67,13 @@ frontend/.env.local
 *.DS_Store
 Thumbs.db
 
-# Coverage
+# Coverage / testing
 .coverage
 coverage.xml
 htmlcov/
-
-# Pytest
 .pytest_cache/
-.pytest_tmp/
-
-# mypy
 .mypy_cache/
 .dmypy.json
-dmypy.json
 
 # Logs
 *.log
-logs/

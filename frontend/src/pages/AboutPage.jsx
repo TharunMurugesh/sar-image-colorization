@@ -44,10 +44,10 @@ export function AboutPage() {
             </h3>
           </div>
           <div className="font-mono" style={{ background: 'rgba(0,0,0,0.4)', padding: '8px 12px', borderRadius: '6px', fontSize: '0.78rem', color: 'var(--cyan-400)', marginBottom: '10px' }}>
-            L = 1.0·L1_RGB + 0.5·(1 - SSIM) + 0.1·L_struct
+            L = 0.70·L1_RGB + 0.30·(1-SSIM) + 0.15·L_lab + 0.05·L_struct
           </div>
           <p style={{ fontSize: '0.84rem', color: 'var(--text-secondary)', lineHeight: 1.55 }}>
-            Optimizes color fidelity with pixel-wise L1 loss while penalizing structural degradation via Multi-Scale Structural Similarity (SSIM) and edge distortion via Sobel-L1 loss.
+            Optimizes optical fidelity with pixel-wise L1 loss while penalizing structural degradation via Multi-Scale Structural Similarity (SSIM), edge distortion via Sobel-L1 loss, and enforcing correct chroma via CIE-Lab (a*b*) color loss.
           </p>
         </div>
 

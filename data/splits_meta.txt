@@ -1,6 +1,9 @@
-split_method=scene-based (no scene leakage)
-seed=42
-train=2
-val=1
-test=0
-total=3
+split_method=scene-disjoint
+source_dataset=sih1733
+patch_size=256
+stride=128
+augment=True
+train=1296
+val=54
+test=54
+total=1404

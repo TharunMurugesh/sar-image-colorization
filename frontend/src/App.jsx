@@ -50,7 +50,7 @@ export function App() {
         }}
       >
         <div>
-          ISRO SIH1733 &bull; SAR Image Colorization for Comprehensive Insight using Deep Learning Model
+          ISRO SIH1733 &bull; SAR-to-Optical Reconstruction for Comprehensive Insight using Deep Learning Model
         </div>
         <div style={{ marginTop: '4px', fontFamily: 'var(--font-mono)', fontSize: '0.74rem' }}>
           SSG-U-Net + ResNet18 Backbone &bull; Sobel Guidance &bull; MC-Dropout Uncertainty
