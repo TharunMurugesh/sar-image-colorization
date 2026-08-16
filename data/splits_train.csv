@@ -1,3 +1,3 @@
 split,pair_id,sar_path,target_path
-train,2,D:\sar-image-colorization\sar-image-colorization\data\raw\sih1733\Pair-2\SAR-Image-2.jpg,D:\sar-image-colorization\sar-image-colorization\data\raw\sih1733\Pair-2\Optical-Image-2.jpg
-train,1,D:\sar-image-colorization\sar-image-colorization\data\raw\sih1733\Pair-1\SAR-Image-1.jpg,D:\sar-image-colorization\sar-image-colorization\data\raw\sih1733\Pair-1\Optical-Image-1.jpg
+train,2,data/raw/sih1733/Pair-2/SAR-Image-2.jpg,data/raw/sih1733/Pair-2/Optical-Image-2.jpg
+train,1,data/raw/sih1733/Pair-1/SAR-Image-1.jpg,data/raw/sih1733/Pair-1/Optical-Image-1.jpg

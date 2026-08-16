@@ -125,24 +125,9 @@ def _uncertainty_to_heatmap(uncertainty: torch.Tensor) -> Image.Image:
     return Image.fromarray(rgb, mode="RGB")
 
 
-# ── Main entry point ──────────────────────────────────────────────────────────
+from ml.inference.pipeline import run_pipeline as ml_run_pipeline
 
 def run_colorization(upload_path: Path, job_id: str) -> ColorizationResult:
-    """
-    Run the full SAR colorization pipeline on an uploaded file.
-
-    Args:
-        upload_path: Path to the already-saved uploaded file.
-        job_id:      UUID string used to name output files.
-
-    Returns:
-        ColorizationResult with paths and statistics.
-
-    Raises:
-        UnsupportedFileError: If the file extension is not in ALLOWED_EXTENSIONS.
-        ModelNotReadyError:   If no trained checkpoint is available (from model_loader).
-        RuntimeError:         On inference failure.
-    """
     ext = upload_path.suffix.lower()
     if ext not in ALLOWED_EXTENSIONS:
         raise UnsupportedFileError(
@@ -150,64 +135,16 @@ def run_colorization(upload_path: Path, job_id: str) -> ColorizationResult:
             f"Accepted: {sorted(ALLOWED_EXTENSIONS)}"
         )
 
-    logger.info("[%s] Loading SAR file: %s", job_id, upload_path)
+    # Check model readiness first
+    get_model()
 
-    # ── 1. Load raw array ─────────────────────────────────────────────────────
-    arr = load_any(upload_path)   # (C, H, W) float32 — reuses ml.data.dataset
-    orig_c, orig_h, orig_w = arr.shape
-    logger.info("[%s] Raw shape: (%d, %d, %d)", job_id, orig_c, orig_h, orig_w)
-
-    # ── 2. Adapt channels ─────────────────────────────────────────────────────
-    arr = _adapt_channels(arr, target_channels=settings.model_in_channels)
-
-    # ── 3. Normalise to [0, 1] ────────────────────────────────────────────────
-    arr = _normalize(arr)
-
-    # ── 4. Crop/pad to patch size ─────────────────────────────────────────────
-    p = settings.patch_size
-    arr = _crop_or_pad(arr, p, p)   # reuses ml.data.dataset._crop_or_pad
-
-    # ── 5. Build batch tensor (1, C, H, W) ───────────────────────────────────
-    device = get_model_device()
-    x = torch.from_numpy(arr.copy()).unsqueeze(0).to(device)  # (1, 3, 256, 256)
-
-    # ── 6. MC-Dropout inference ───────────────────────────────────────────────
-    model = get_model()
-    logger.info("[%s] Running MC-Dropout (%d passes) …", job_id, settings.mc_passes)
-    mean_pred, uncertainty, _edges = mc_dropout_inference(
-        model, x, num_samples=settings.mc_passes
-    )
-    # mean_pred: (1, 3, 256, 256)  uncertainty: (1, 1, 256, 256)
-
-    # ── 7. Trust-gated rendering ──────────────────────────────────────────────
-    gated = trust_gated_rendering(mean_pred, x, uncertainty, tau=settings.trust_tau)
-
-    # ── 8. Persist outputs ────────────────────────────────────────────────────
-    results_dir = Path(settings.results_dir)
-    results_dir.mkdir(parents=True, exist_ok=True)
-
-    result_path = results_dir / f"{job_id}_colorized.png"
-    uncertainty_path = results_dir / f"{job_id}_uncertainty.png"
-
-    # Colorized image
-    gated_np = gated.squeeze(0).permute(1, 2, 0).cpu().numpy()  # (H, W, 3)
-    gated_u8 = (np.clip(gated_np, 0.0, 1.0) * 255).astype(np.uint8)
-    Image.fromarray(gated_u8, mode="RGB").save(result_path)
-
-    # Uncertainty heatmap
-    _uncertainty_to_heatmap(uncertainty).save(uncertainty_path)
-
-    uncertainty_mean = float(uncertainty.mean().cpu().item())
-    logger.info(
-        "[%s] Done. uncertainty_mean=%.6f  result=%s",
-        job_id, uncertainty_mean, result_path.name,
-    )
+    res = ml_run_pipeline(raw_sar_path=upload_path, job_id=job_id)
 
     return ColorizationResult(
-        result_path=result_path,
-        uncertainty_path=uncertainty_path,
-        uncertainty_mean=uncertainty_mean,
-        sar_channels=orig_c,
-        sar_height=orig_h,
-        sar_width=orig_w,
+        result_path=res.result_path,
+        uncertainty_path=res.uncertainty_path,
+        uncertainty_mean=res.uncertainty_mean,
+        sar_channels=res.sar_channels,
+        sar_height=res.sar_height,
+        sar_width=res.sar_width,
     )
